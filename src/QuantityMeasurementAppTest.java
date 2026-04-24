@@ -6,33 +6,38 @@ import com.apps.quantitymeasurement.Length.LengthUnit;
 
 public class QuantityMeasurementAppTest {
 
+    private final double EPSILON = 1e-6;
+
     @Test
-    public void yardEquals36Inches() {
-        Length yard = new Length(1.0, LengthUnit.YARDS);
-        Length inches = new Length(36.0, LengthUnit.INCHES);
-        assertEquals(yard, inches);
+    public void testFeetToInchesConversion() {
+        assertEquals(12.0, Length.convert(1.0, LengthUnit.FEET, LengthUnit.INCHES), EPSILON);
     }
 
     @Test
-    public void centimeterEqualsInches() {
-        Length cm = new Length(1.0, LengthUnit.CENTIMETERS);
-        Length inches = new Length(0.393701, LengthUnit.INCHES);
-        assertEquals(cm, inches);
+    public void testInchesToYardsConversion() {
+        assertEquals(1.0, Length.convert(36.0, LengthUnit.INCHES, LengthUnit.YARDS), EPSILON);
     }
 
     @Test
-    public void threeFeetEqualsOneYard() {
-        assertEquals(new Length(3.0, LengthUnit.FEET), new Length(1.0, LengthUnit.YARDS));
+    public void testCentimetersToInchesConversion() {
+        assertEquals(0.393701, Length.convert(1.0, LengthUnit.CENTIMETERS, LengthUnit.INCHES), EPSILON);
     }
 
     @Test
-    public void testTransitiveProperty() {
-        Length a = new Length(1.0, LengthUnit.YARDS);
-        Length b = new Length(3.0, LengthUnit.FEET);
-        Length c = new Length(36.0, LengthUnit.INCHES);
+    public void testZeroValueConversion() {
+        assertEquals(0.0, Length.convert(0.0, LengthUnit.YARDS, LengthUnit.FEET), EPSILON);
+    }
 
-        assertEquals(a, b);
-        assertEquals(b, c);
-        assertEquals(a, c); // Transitive check
+    @Test
+    public void testRoundTrip_PreservesValue() {
+        double original = 10.5;
+        double toInches = Length.convert(original, LengthUnit.FEET, LengthUnit.INCHES);
+        double backToFeet = Length.convert(toInches, LengthUnit.INCHES, LengthUnit.FEET);
+        assertEquals(original, backToFeet, EPSILON);
+    }
+
+    @Test
+    public void testInvalidValue_ThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> new Length(Double.NaN, LengthUnit.FEET));
     }
 }
