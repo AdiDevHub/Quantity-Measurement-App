@@ -1,50 +1,35 @@
 package com.apps.quantitymeasurement;
 
-import java.util.Objects;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import com.apps.quantitymeasurement.Length.LengthUnit;
 
-public class Length {
-    private final double value;
-    private final LengthUnit unit;
+public class QuantityMeasurementAppTest {
 
-    public enum LengthUnit {
-        FEET(12.0), INCHES(1.0), YARDS(36.0), CENTIMETERS(0.393701);
-
-        private final double conversionFactor;
-        LengthUnit(double factor) { this.conversionFactor = factor; }
-        public double getConversionFactor() { return this.conversionFactor; }
+    @Test
+    public void testAddition_ExplicitTargetUnit_Yards() {
+        Length l1 = new Length(1.0, LengthUnit.FEET);
+        Length l2 = new Length(12.0, LengthUnit.INCHES);
+        // 1ft + 12in = 2ft. 2ft / 3ft per yard = 0.666...
+        Length result = Length.add(l1, l2, LengthUnit.YARDS);
+        assertEquals(0.666667, result.getValue(), 1e-6);
+        assertEquals(LengthUnit.YARDS, result.getUnit());
     }
 
-    public Length(double value, LengthUnit unit) {
-        if (!Double.isFinite(value)) throw new IllegalArgumentException("Invalid value");
-        this.value = value;
-        this.unit = Objects.requireNonNull(unit, "Unit required");
+    @Test
+    public void testAddition_ExplicitTargetUnit_Centimeters() {
+        Length l1 = new Length(1.0, LengthUnit.INCHES);
+        Length l2 = new Length(1.0, LengthUnit.INCHES);
+        // 2 inches in CM = 2 / 0.393701 = 5.080002
+        Length result = Length.add(l1, l2, LengthUnit.CENTIMETERS);
+        assertEquals(5.080002, result.getValue(), 1e-6);
     }
 
-    /**
-     * Static add method: Adds two lengths and returns the result in the target unit.
-     */
-    public static Length add(Length l1, Length l2, LengthUnit targetUnit) {
-        if (l1 == null || l2 == null) throw new IllegalArgumentException("Operands cannot be null");
-
-        // Step 1: Convert both to base unit (Inches)
-        double totalInches = (l1.value * l1.unit.getConversionFactor()) +
-                (l2.value * l2.unit.getConversionFactor());
-
-        // Step 2: Convert sum to target unit
-        double resultValue = totalInches / targetUnit.getConversionFactor();
-
-        return new Length(resultValue, targetUnit);
+    @Test
+    public void testAddition_NullTargetUnit_ThrowsException() {
+        Length l1 = new Length(1.0, LengthUnit.FEET);
+        assertThrows(IllegalArgumentException.class, () -> {
+            Length.add(l1, l1, null);
+        });
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Length other = (Length) obj;
-        return Math.abs((this.value * this.unit.getConversionFactor()) -
-                (other.value * other.unit.getConversionFactor())) < 1e-6;
-    }
-
-    @Override
-    public String toString() { return String.format("%.2f %s", value, unit); }
 }
