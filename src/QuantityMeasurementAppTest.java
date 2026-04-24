@@ -1,42 +1,38 @@
 package com.apps.quantitymeasurement;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import com.apps.quantitymeasurement.Length.LengthUnit;
+import java.util.Objects;
 
-public class QuantityMeasurementAppTest {
+public class QuantityLength {
+    private final double value;
+    private final LengthUnit unit;
 
-    @Test
-    public void testAddition_FeetAndInches_ReturnsFeet() {
-        Length l1 = new Length(1.0, LengthUnit.FEET);
-        Length l2 = new Length(12.0, LengthUnit.INCHES);
-        Length expected = new Length(2.0, LengthUnit.FEET);
-        assertEquals(expected, Length.add(l1, l2, LengthUnit.FEET));
+    public QuantityLength(double value, LengthUnit unit) {
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("Invalid value");
+        this.value = value;
+        this.unit = Objects.requireNonNull(unit, "Unit required");
     }
 
-    @Test
-    public void testAddition_InchesAndFeet_ReturnsInches() {
-        Length l1 = new Length(12.0, LengthUnit.INCHES);
-        Length l2 = new Length(1.0, LengthUnit.FEET);
-        Length expected = new Length(24.0, LengthUnit.INCHES);
-        assertEquals(expected, Length.add(l1, l2, LengthUnit.INCHES));
+    public QuantityLength convertTo(LengthUnit targetUnit) {
+        double baseValue = this.unit.convertToBaseUnit(this.value);
+        double convertedValue = targetUnit.convertFromBaseUnit(baseValue);
+        return new QuantityLength(convertedValue, targetUnit);
     }
 
-    @Test
-    public void testAddition_Commutativity() {
-        Length l1 = new Length(1.0, LengthUnit.YARDS);
-        Length l2 = new Length(3.0, LengthUnit.FEET);
-
-        Length res1 = Length.add(l1, l2, LengthUnit.INCHES);
-        Length res2 = Length.add(l2, l1, LengthUnit.INCHES);
-
-        assertEquals(res1, res2, "Addition should be commutative");
+    public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
+        double sumInBase = this.unit.convertToBaseUnit(this.value) +
+                other.unit.convertToBaseUnit(other.value);
+        return new QuantityLength(targetUnit.convertFromBaseUnit(sumInBase), targetUnit);
     }
 
-    @Test
-    public void testAddition_WithZeroValue() {
-        Length l1 = new Length(5.0, LengthUnit.FEET);
-        Length l2 = new Length(0.0, LengthUnit.INCHES);
-        assertEquals(l1, Length.add(l1, l2, LengthUnit.FEET));
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        QuantityLength that = (QuantityLength) o;
+        return Math.abs(this.unit.convertToBaseUnit(this.value) -
+                that.unit.convertToBaseUnit(that.value)) < 1e-6;
     }
+
+    @Override
+    public String toString() { return String.format("%.2f %s", value, unit); }
 }

@@ -1,21 +1,17 @@
 package com.apps.quantitymeasurement;
 
-import com.apps.quantitymeasurement.Length.LengthUnit;
-
 public class QuantityMeasurementApp {
-
     public static void main(String[] args) {
-        System.out.println("--- UC7: Addition with Explicit Target Unit ---");
+        System.out.println("--- UC8: Standalone Unit Responsibility ---");
 
-        Length oneFoot = new Length(1.0, LengthUnit.FEET);
-        Length twelveInches = new Length(12.0, LengthUnit.INCHES);
+        QuantityLength oneFoot = new QuantityLength(1.0, LengthUnit.FEET);
 
-        // 1ft + 12in requested in YARDS
-        Length resultYards = Length.add(oneFoot, twelveInches, LengthUnit.YARDS);
-        System.out.println("1ft + 12in in YARDS: " + resultYards); // Expected ~0.667 Yards
+        // Delegation in action
+        QuantityLength result = oneFoot.convertTo(LengthUnit.INCHES);
+        System.out.println("Converted 1 Foot to: " + result);
 
-        // 1ft + 12in requested in INCHES
-        Length resultInches = Length.add(oneFoot, twelveInches, LengthUnit.INCHES);
-        System.out.println("1ft + 12in in INCHES: " + resultInches); // Expected 24.00 Inches
+        // Arithmetic delegation
+        QuantityLength sum = oneFoot.add(new QuantityLength(12.0, LengthUnit.INCHES), LengthUnit.FEET);
+        System.out.println("1 Foot + 12 Inches = " + sum);
     }
 }
