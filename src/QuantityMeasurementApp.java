@@ -2,16 +2,20 @@ package com.apps.quantitymeasurement;
 
 public class QuantityMeasurementApp {
     public static void main(String[] args) {
-        System.out.println("--- UC8: Standalone Unit Responsibility ---");
+        System.out.println("--- UC9: Weight Category Support ---");
 
+        QuantityWeight oneKg = new QuantityWeight(1.0, WeightUnit.KILOGRAM);
+        QuantityWeight thousandGrams = new QuantityWeight(1000.0, WeightUnit.GRAM);
+
+        // Equality check
+        System.out.println("1 kg equals 1000g: " + oneKg.equals(thousandGrams));
+
+        // Cross-unit Addition
+        QuantityWeight total = oneKg.add(new QuantityWeight(1.0, WeightUnit.POUND), WeightUnit.GRAM);
+        System.out.println("1 kg + 1 lb in Grams: " + total);
+
+        // Type Safety Check
         QuantityLength oneFoot = new QuantityLength(1.0, LengthUnit.FEET);
-
-        // Delegation in action
-        QuantityLength result = oneFoot.convertTo(LengthUnit.INCHES);
-        System.out.println("Converted 1 Foot to: " + result);
-
-        // Arithmetic delegation
-        QuantityLength sum = oneFoot.add(new QuantityLength(12.0, LengthUnit.INCHES), LengthUnit.FEET);
-        System.out.println("1 Foot + 12 Inches = " + sum);
+        System.out.println("1 kg equals 1 foot? " + oneKg.equals(oneFoot));
     }
 }

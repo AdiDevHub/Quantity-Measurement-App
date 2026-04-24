@@ -2,37 +2,47 @@ package com.apps.quantitymeasurement;
 
 import java.util.Objects;
 
-public class QuantityLength {
+public class QuantityWeight {
     private final double value;
-    private final LengthUnit unit;
+    private final WeightUnit unit;
 
-    public QuantityLength(double value, LengthUnit unit) {
-        if (!Double.isFinite(value)) throw new IllegalArgumentException("Invalid value");
+    public QuantityWeight(double value, WeightUnit unit) {
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("Finite value required");
         this.value = value;
         this.unit = Objects.requireNonNull(unit, "Unit required");
     }
 
-    public QuantityLength convertTo(LengthUnit targetUnit) {
+    public QuantityWeight convertTo(WeightUnit targetUnit) {
         double baseValue = this.unit.convertToBaseUnit(this.value);
-        double convertedValue = targetUnit.convertFromBaseUnit(baseValue);
-        return new QuantityLength(convertedValue, targetUnit);
+        return new QuantityWeight(targetUnit.convertFromBaseUnit(baseValue), targetUnit);
     }
 
-    public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
+    // Overloaded Add (Implicit Target)
+    public QuantityWeight add(QuantityWeight other) {
+        return add(other, this.unit);
+    }
+
+    // Overloaded Add (Explicit Target)
+    public QuantityWeight add(QuantityWeight other, WeightUnit targetUnit) {
         double sumInBase = this.unit.convertToBaseUnit(this.value) +
                 other.unit.convertToBaseUnit(other.value);
-        return new QuantityLength(targetUnit.convertFromBaseUnit(sumInBase), targetUnit);
+        return new QuantityWeight(targetUnit.convertFromBaseUnit(sumInBase), targetUnit);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
+        // Category Type Safety: Reject if comparing Weight to Length
         if (o == null || getClass() != o.getClass()) return false;
-        QuantityLength that = (QuantityLength) o;
+
+        QuantityWeight that = (QuantityWeight) o;
         return Math.abs(this.unit.convertToBaseUnit(this.value) -
                 that.unit.convertToBaseUnit(that.value)) < 1e-6;
     }
 
     @Override
-    public String toString() { return String.format("%.2f %s", value, unit); }
+    public int hashCode() { return Objects.hash(value, unit); }
+
+    @Override
+    public String toString() { return String.format("%.3f %s", value, unit); }
 }
