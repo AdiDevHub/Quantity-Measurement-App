@@ -2,54 +2,38 @@ package com.apps.quantitymeasurement;
 
 import java.util.Objects;
 
-/**
- * Represents a physical length measurement.
- * This is an immutable Value Object.
- */
 public class Length {
     private final double value;
     private final LengthUnit unit;
 
     public enum LengthUnit {
-        FEET(12.0),
-        INCHES(1.0),
-        YARDS(36.0),
-        CENTIMETERS(0.393701);
+        FEET(12.0), INCHES(1.0), YARDS(36.0), CENTIMETERS(0.393701);
 
         private final double conversionFactor;
-
-        LengthUnit(double conversionFactor) {
-            this.conversionFactor = conversionFactor;
-        }
-
-        public double getConversionFactor() {
-            return this.conversionFactor;
-        }
+        LengthUnit(double factor) { this.conversionFactor = factor; }
+        public double getConversionFactor() { return this.conversionFactor; }
     }
 
     public Length(double value, LengthUnit unit) {
-        if (!Double.isFinite(value)) {
-            throw new IllegalArgumentException("Value must be a finite number");
-        }
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("Invalid value");
         this.value = value;
-        this.unit = Objects.requireNonNull(unit, "Unit cannot be null");
+        this.unit = Objects.requireNonNull(unit, "Unit required");
     }
 
     /**
-     * Converts a raw value between units without instantiating an object.
+     * Static add method: Adds two lengths and returns the result in the target unit.
      */
-    public static double convert(double value, LengthUnit source, LengthUnit target) {
-        if (source == null || target == null) throw new IllegalArgumentException("Units cannot be null");
-        return (value * source.getConversionFactor()) / target.getConversionFactor();
-    }
+    public static Length add(Length l1, Length l2, LengthUnit targetUnit) {
+        if (l1 == null || l2 == null) throw new IllegalArgumentException("Operands cannot be null");
 
-    /**
-     * Instance method to convert current length to a new target unit.
-     * Returns a NEW instance to maintain immutability.
-     */
-    public Length convertTo(LengthUnit targetUnit) {
-        double convertedValue = convert(this.value, this.unit, targetUnit);
-        return new Length(convertedValue, targetUnit);
+        // Step 1: Convert both to base unit (Inches)
+        double totalInches = (l1.value * l1.unit.getConversionFactor()) +
+                (l2.value * l2.unit.getConversionFactor());
+
+        // Step 2: Convert sum to target unit
+        double resultValue = totalInches / targetUnit.getConversionFactor();
+
+        return new Length(resultValue, targetUnit);
     }
 
     @Override
@@ -57,20 +41,10 @@ public class Length {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Length other = (Length) obj;
-        // Compare using base unit normalization with small epsilon for double precision
         return Math.abs((this.value * this.unit.getConversionFactor()) -
                 (other.value * other.unit.getConversionFactor())) < 1e-6;
     }
 
     @Override
-    public String toString() {
-        return String.format("%.2f %s", value, unit);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value, unit);
-    }
-
-    public double getValue() { return value; }
+    public String toString() { return String.format("%.2f %s", value, unit); }
 }
